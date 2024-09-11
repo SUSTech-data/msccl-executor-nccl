@@ -114,9 +114,15 @@ $(PKGDIR)/%.pc : %.pc
 	mkdir -p $(PKGDIR)
 	install -m 644 $< $@
 
+$(OBJDIR)/%.o : %.cu
+	@printf "Compiling  %-35s > %s\n" $< $@
+	mkdir -p $(dir $@)
+	$(MAKE) -j1 $(NVCC) $(NVCCFLAGS) -c $< -o $@
+.NOTPARALLEL: $(OBJDIR)/%.o
+
 $(OBJDIR)/%.o : %.cc $(INCTARGETS)
 	@printf "Compiling  %-35s > %s\n" $< $@
-	mkdir -p `dirname $@`
+	mkdir -p $(dir $@)
 	$(CXX) -I. -I$(INCDIR) $(CXXFLAGS) -Iinclude -c $< -o $@
 	@$(CXX) -I. -I$(INCDIR) $(CXXFLAGS) -Iinclude -M $< > $(@:%.o=%.d.tmp)
 	@sed "0,/^.*:/s//$(subst /,\/,$@):/" $(@:%.o=%.d.tmp) > $(@:%.o=%.d)
